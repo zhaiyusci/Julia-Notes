@@ -1,6 +1,10 @@
 % !TeX TS-program = xelatex
 \documentclass[10pt,a4paper]{article}
+
 \usepackage[fontset=fandol, UTF8]{ctex}
+\usepackage{fontspec}
+
+
 \usepackage[margin=2cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -16,7 +20,8 @@
 \pagestyle{fancy}
 \definecolor{myltgray}{rgb}{0.95,0.95,0.95}
 \usepackage{textcomp}
-
+\usepackage{multicol}
+\usepackage{comment}
 \rhead{\raisebox{0.66ex}{\thepage}}
 \lhead{\raisebox{0.66ex}{Julia 学习笔记}\ \ \includegraphics[width=0.409cm]{pen.png}}
 \cfoot{}
@@ -37,206 +42,176 @@
   backgroundcolor=\color{myltgray},
   commentstyle=\emph,
   language=commentonly,
-  upquote=true
+  upquote=true,
+  numbers=left,
+  numberstyle=\tiny,
+  frame=lines
  }
 
 \setlength{\parskip}{2pt}%
 %\setlength{\parindent}{0pt}
-
+\setmonofont[Scale=0.9]{DejaVu Sans Mono}
 \begin{document}
-\title{Julia 速览\footnote{英文版 commit： \texttt{d8cd0dd8a99d08c1a7499cb708ec3792751d24f4}。}}
-\author{作者：Bogumi\l{} Kami\'n{}ski\\翻译：翟羽}
-\date{2021年4月19日}
+\title{Julia 学习笔记}
+\author{翟羽}
 \maketitle
 
 {\centering
-\includegraphics[width=0.2\textwidth]{pen.png}\par
+\includegraphics[width=0.2\textwidth]{pen.png}
+
 }
 
-\tableofcontents
+\begin{multicols}{2}
+	\tableofcontents
+\end{multicols}
 
-\section{引言}
-本文旨在通过实例向程序员介绍 Julia 编程，
-是 Julia 语言的简明概览。
-\footnote{小火箭图标可由以下网址免费获取  \url{http://www.clipartlord.com/free-cartoon-rocketship-clip-art-2/}。
-（译注：该站已殁。）}
 
-执行这些例子的最简方法是将他们复制粘贴到 Julia 的输入-求值-打印循环（REPL） 里，或者粘贴到文件中然后使用 \lstinline|include| 功能运行。
-两者不同之处在于前者每粘贴一条指令，终端中就会输出其结果。
 
-若你的系统中缺少某包（package），则在 Julia REPL 中按下 \lstinline|]| 进入包管理器，
-然后键入 \lstinline|add [包名]| 以安装该包。
+本文旨在通过实例向有其他编程语言经验的计算科学家介绍 Julia 语言，也可以作为介绍 Julia 语言的简短课程的讲义。
 
-这些年来的开发经验告诉我，管理多个 Julia 项目的最佳实践是分别使用不同的项目环境。
-你可以阅读这篇博客
-\url{https://bkamins.github.io/julialang/2020/05/18/project-workflow.html} 
-了解更多。
+本文仅介绍 Julia 语言（作者认为的）最基本和最常用功能。
+读者应该能理解作者的工作背景和读者的潜在（巨大）差异，在阅读本文之外请积极参考其他资料。
+在本文第\ref{sec:readmore}节列出了较为重要的参考资料，供读者进一步学习。
 
-本文仅具导论功能。以下重要主题本文未能涵盖，为 Julia 学习者所应知应会：
-\begin{enumerate}[label=\arabic*),nolistsep]
-  \item 参数类型（parametric types）；
-  \item 并行（parallel）与分布式处理（distributed processing）；
-  \item 进阶输入输出（I/O）操作；
-  \item 进阶包管理；
-  \item 与操作系统shell交互，参见 \lstinline|run|；
-  \item 异常（exception）处理，参见 \lstinline|try|；
-  \item 协程（coroutine）创建;
-  \item 与 C、Fortran、Python 以及 R 交互。
-\end{enumerate}
-请参阅 Julia 最新版文档 \url{https://docs.julialang.org/} 
-\footnote{译注：亦可参考完善中的中文文档 \url{https://docs.juliacn.com/latest/}，但请以英文原文为准。} 以了解这些内容。
+欢迎一切建设性建议，请在 github issues （\url{https://github.com/zhaiyusci/Julia-Notes/issues}）  中提出。
 
-《 Julia 速览》 在以下 64 位版本的 Julia 下测试通过
-（你可以在你的 Julia 会话中运行\lstinline|versioninfo()| 检查版本）：
-\begin{lstlisting}
-Julia Version 1.4.2
-Commit 44fa15b150* (2020-05-23 18:35 UTC)
-Platform Info:
-OS: Linux (x86_64-pc-linux-gnu)
-CPU: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
-WORD_SIZE: 64
-LIBM: libopenlibm
-LLVM: libLLVM-8.0.1 (ORCJIT, skylake)
-\end{lstlisting}
-
-如你想使用 PDF 以外的格式阅读本文，其最简单的方法是克隆本项目
-\sloppy\url{https://github.com/zhaiyusci/The-Julia-Express-zh-CN}\footnote{译注：原文地址为 \url{https://github.com/bkamins/The-Julia-Express}。}
-至本地，
-使用 pandoc 转换格式。
-如执行
-\begin{lstlisting}
-pandoc -i julia_express.tex -f latex -t html5 -s -o julia_express.html
-\end{lstlisting}
-则输出 HTML 格式的文档。
-
-欢迎一切建设性建议，可用电子邮件联系作者 \href{mailto:bkamins@sgh.waw.pl}{bkamins@sgh.waw.pl}。
-\footnote{译注：如遇内容问题请联系作者，翻译问题请在 \href{https://github.com/zhaiyusci/The-Julia-Express-zh-CN/issues}{github issue} 中提出。}
 
 \section{概览}
 
-运行 \lstinline|julia| 可打开交互模式（REPL）。此模式下有用的命令有：
-\begin{enumerate}[label=\arabic*),nolistsep]
-  \item \lstinline|^D| （退出 Julia ）；
-  \item \lstinline|^C| （中断计算）；
-  \item \lstinline|?| （进入帮助模式）；
-  \item \lstinline|;| （进入系统 shell 模式）；
-  \item \lstinline|]| （进入包管理模式）；
-  \item \lstinline|Ctrl-l| （清空屏幕）；
-  \item 表达式后接 \lstinline|;| 可阻止其值输出到 REPL中[脚本（script）模式不需要]。
-\end{enumerate}
+Julia 是一种为科学计算设计的编程语言。
+相比 C/C++、FORTRAN 等语言，其动态语言的特性和方便的包管理机制极大地降低了其开发痛苦；
+相比 Python、R 等语言，其编译型语言的特性和出色的性能优化保证了其执行效率；
+相比 MATLAB 等商业语言，Julia 容易获得，能够在各种工作环境轻松部署。
 
+\subsection{工作环境}
+
+请访问 Julia 语言官网 \url{https://julialang.org/} 下载适合您操作系统版本的 Julia 安装包。
+Julia 的安装过程和一般的软件相似，在此不做过多说明。对于 Windows 用户，您可以在 Windows Subsystem for Linux （WSL）中安装使用。
+如果您在公用服务器中学习 Julia，请咨询您的系统管理员。
+
+本文在以下版本的 Julia 下测试通过
+（你可以在你的 Julia 会话中运行\lstinline|versioninfo()| 检查版本）：
+\begin{lstlisting}
+Julia Version 1.5.3
+Commit 788b2c77c1 (2020-11-09 13:37 UTC)
+Platform Info:
+  OS: Linux (x86_64-pc-linux-gnu)
+  CPU: AMD Ryzen 7 PRO 4750U with Radeon Graphics
+  WORD_SIZE: 64
+  LIBM: libopenlibm
+  LLVM: libLLVM-9.0.1 (ORCJIT, znver2)
+\end{lstlisting}
+您的版本可能和本文所述有所不同。但对于本文的大部分内容，这应该不会导致什么问题。
+如果有，请访问文档的 github 页面提 issue。
+
+\subsection{输入-求值-打印循环（REPL）}
+通过本文档学习 Julia 的最简单方法是将它们输入到 Julia 的\textbf{输入-求值-打印循环}（REPL） 里。
+在系统的终端中键入 \lstinline|julia| 并回车将进入 REPL。
+在 REPL 您可以实时和 Julia 编译器交互。
+在 REPL 中按 \lstinline|^D| （\lstinline|Ctrl-D|）可以退出 REPL，
+按 \lstinline|^C| 可以中断计算。
+
+\subsection{基本包管理和安装第一个包 IJulia}
+
+刚安装好的 Julia 编译器仅包含很少一部分\textbf{包}（package）。
+Julia 社区中其他成员的成果往往以包的形式发布供大家使用。
+若您需要安装包 \lstinline|PackageX|，
+可以在 Julia REPL 中按下 \lstinline|]| 进入包管理器，
+然后键入 \lstinline|add PackageX| 以安装该包。
+在网络畅通的状态下，安装过程不需要用户过多操心。
+Julia 的包管理机制会自动下载、安装该包及其所有依赖。
+\footnote{
+	有时网路极不畅通，您可能需要\textbf{代理}（proxy）。
+	请参考 \url{https://discourse.julialang.org/t/install-packages-behind-the-proxy/23298/2}。
+	如您使用环境是 WSL2，请进一步参考 \url{https://github.com/microsoft/WSL/issues/4402}。
+}
+当然您可以把 \lstinline|PackageX| 换成您需要的包的名称。
+在包管理器中，还有 \lstinline|status|（状态）、\lstinline|remove|（移除）、\lstinline|update|（升级） 等命令可供使用。
+按退格键可以退出包管理模式。
+
+例如，
+另一个可以实时与 Julia 交互的方式是 Jupyter Notebook。
+在 Julia 的 REPL 中键入 \lstinline|]add IJulia|。
+安装完毕后，退出包管理模式，
+键入 \lstinline|using IJulia; IJulia.notebook()| 即可在默认浏览器中打开 Jupyter。
+\footnote{
+WSL 用户需要做更多事情。请参考 
+\url{https://github.com/jupyter/notebook/issues/4594}。
+}
+
+本文将不会对 Jupyter 做过多说明，而默认您了解其基本用法。
+\footnote{
+	如果您原来用 FORTRAN 或 C，或者 Julia 是您的第一门语言，您可能不了解 Jupyter。
+	鉴于 Jupyter 是图形界面，您可能愿意观看一些视频教程来学习其基本用法。
+	目前 Jupyter 的中文视频教程大多是结合 Python 的，但这并不妨碍您通过这些资料了解 Jupyter本身。
+	如果有机会，我可能会制作一些简短的视频教程（但目前没有）。
+}
+本文的第\ref{sec:plot}节会讨论一些基本的科学绘图，因此 Jupyter 是一个更合适的环境。
+
+\begin{comment}
 Julia REPL 基本功能举例如下（亦可在脚本中使用）：
 \begin{lstlisting}
-  @edit max(1,2)      # 显示 max 函数当参数为 1, 2 时的定义
-  varinfo()           # 列出全局变量及其类型
-  cd("D:/")           # 将工作路径切换到 D:/ （在 Windows 下也可以用 / )
-  pwd()               # 获取当前工作路径
-  include("file.jl")  # 执行源文件
-  exit(1)             # 退出 Julia，返回码（exit code）为 1 （默认为 0）
-  clipboard([1,2])    # 将数据复制到系统剪贴板
-  clipboard()         # 以字符串（string）格式加载系统剪贴板中的数据
+@edit max(1,2)      # 显示 max 函数当参数为 1, 2 时的定义
+varinfo()           # 列出全局变量及其类型
+cd("D:/")           # 将工作路径切换到 D:/ （在 Windows 下也可以用 / )
+pwd()               # 获取当前工作路径
+include("file.jl")  # 执行源文件
+exit(1)             # 退出 Julia，返回码（exit code）为 1 （默认为 0）
+clipboard([1,2])    # 将数据复制到系统剪贴板
+clipboard()         # 以字符串（string）格式加载系统剪贴板中的数据
 \end{lstlisting}
+\end{comment}
+
+\subsection{直接在终端运行 Julia 程序与 JIT 编译}
 
 你可以在系统 shell 里通过 \lstinline|julia script.jl| 运行 Julia 脚本。
+Julia 将“逐行执行”这些内容。
+但请注意，Julia 并没有逐行解释（interprete）这些代码，
+而是\textbf{实时编译} （JIT ）。
 
 将下列示例脚本保存至文件中并执行（在以后的章节中有更多例子）：
-\begin{lstlisting}
-  """Eratosthenes 筛法函数文档（ docstring ）"""
-  function es(n::Int) # 接受一个整数类型参数
-      isprime = trues(n) # n 个元素的真（true）向量
-      isprime[1] = false # 1 不是质数
-      for i in 2:isqrt(n) # 在小于或等于 sqrt(n) 的整数中循环
-          if isprime[i] # 条件求值
-              for j in i^2:i:n # 步长为 i 的序列
-                  isprime[j] = false
-              end
-          end
-      end
-      return filter(x -> isprime[x], 1:n) # 使用匿名函数筛选
-  end
-  
-  println(es(100))         # 打印小于或等于 100 的全部素数
-  @time length(es(10^6))   # 计算函数执行时间与内存使用
-\end{lstlisting}
+\lstinputlisting{src/jit.jl}
+您会得到类似这样的输出：
+\lstinputlisting{src/jit.out}
+注意到头一次的执行时间（第2行）远大于后两次（第4、6行）。
+这是因为 Julia 会在函数第一次执行前编译该函数，
+因此第一个执行时间实际上包含了函数的编译时间。
+Julia 的 JIT 特性是值得一般使用者注意的。
+简单来说，不建议采用“写脚本”的方式去写 Julia 代码；
+相反，Julia 鼓励您把最常用的功能包装成函数，反复调用。
+\footnote{
+	因此，Julia 有较严重的“首次执行问题”：
+	在使用较大的 Julia 包时（例如绘图包），第一次执行十分耗时。
+	请参考 \url{https://julialang.github.io/PackageCompiler.jl/dev/sysimages/} 改善体验。
+}
 
-\section{基本字面值和类型}
-下列者为基本标量字面值：
-\begin{lstlisting}
-  1::Int               # 64 位 Julia 中的 64 位（bit）整数，无溢出警告
-  1.0::Float64         # 64 位浮点数，定义了 NaN, -Inf, Inf
-  true::Bool           # 布尔型，可以是 true 或 false
-  'c'::Char            # 字符，可以是 Unicode
-  "s"::AbstractString  # 抽象字符串，可以有 Unicode，参见下述字符串（String） 
-\end{lstlisting}
-语法 \lstinline|x::Type| 指字面值（literal） \lstinline|x| 且断言（assert）其为 \lstinline|Type| 类型。
-通常，类型断言并非必要，这里我们只是用它来指示每种字面值的类型。
-所有的基本类型都是不可变的（immutable）。
 
-以相同的方式可进行变量的类型断言，并可用于代码纠错。
 
-Julia 中整数在 64 位 Julia 中是64位的，而在32位Julia 中是32位的。
-这意味着 \lstinline|1::Int32| 断言在 64位Julia中会报错。
-注意 \lstinline|Int| 是由 Julia 版本决定的常量，它要么是 \lstinline|Int64|，要么是 \lstinline|Int32|
-（无符号整数 \lstinline|UInt|也类似）。
+\section{基本字面语法和类型}
 
-类型转换只能显式执行，没有自动类型转化。
-这在函数调用中及其重要。
-将 \lstinline|x| 转为 \lstinline|T| 类型的最简单方法是 \lstinline|T(x)|，如：
-\begin{lstlisting}
-  Int64('a')     # 字符到整数 （译注：结果为 97）
-  Int64(2.0)     # 浮点数到整数
-  Int64(1.3)     # 精度损失错误
-  Int64("a")     # 没有可用的转化错误
-  Float64(1)     # 整数到浮点数
-  Bool(1)        # 转换为 true
-  Bool(0)        # 转换为 false
-  Bool(2)        # 转换错误
-  Char(89)       # 整数到字符
-  string(true)   # 将布尔型转为字符串（也可用于转换其他类型，注意首字母小写）
-  string(1,true) # string 函数可以接收多个参数，并连接它们
-  zero(10.0)     # 10.0对应类型的“零”
-  one(Int64)     # Int64类型的“一”
-\end{lstlisting}
-广义的类型转换可由 \lstinline|convert(Type, x)|进行（一般当  \lstinline|x| 已经是 \lstinline|Type| 类型时， \lstinline|convert| 不再执行复制操作：
-\begin{lstlisting}
-  convert(Int64, 1.0) # 浮点数转为整数
-\end{lstlisting}
-Julia 无法准确进行类型转化时会抛出非精确转化错误。
-\begin{lstlisting}
-  convert(Int64, 1.3) # 将浮点数转换为整数 -> 抛出非精确转化错误
-\end{lstlisting}
-可使用 \lstinline|floor(Int64,1.3)|、 \lstinline|ceil(Int64,1.3)| 或 \lstinline|round(Int64,1.3)| 来解决这一问题。
-字符串的解读可通过 \lstinline|parse(Type, str)| 完成：
-\begin{lstlisting}
-  parse(Int64, "1") # 以 Int64 类型解读字符串 "1"
-\end{lstlisting}
-多个参数自动提升为相同类型（若可行）可用 \lstinline|promote| 达成：
-\begin{lstlisting}
-  promote(true, BigInt(1)//3, 1.0) # BigFloat 类型元组（参见 Tuple） , true 转换为 1.0
-  promote("a", 1)                  # 无法提升为相同类型
-\end{lstlisting}
-许多操作（算术、赋值）自动进行类型提升，故这是补足 Julia 没有类型自动转换规则的方法。
+Julia 的源文件是 \textbf{Unicode} 文本文件。这在上一个例子中已经有所展示。
+因此，在实际工作中，您需要采用一个“现代”的文本编辑器和终端和“现代”的字体来显示这些特殊符号。
+您自己写程序的时候当然可以仅用美式键盘上的那些符号。
+但是诸如 \lstinline|π ⋅ α β ≈ × Δ| 等符号可以极大的改善程序的可读性，
+使代码和公式尽量一致。
+
+
+在 Julia 语言中，注释有以下两种写法：
+\lstinputlisting{src/comment.jl}
+
+您可以直接在程序中写\textbf{字面值}（literal）常量。
+语法 \lstinline|1::Int| 指字面值 \lstinline|1| 且\textbf{断言}其为 \lstinline|Int| \textbf{类型}。
+通常，类型断言并非必要，Julia 会自动推断某字面值为何种类型。
+注意类型断言没有类型转化的功能。
+将 \lstinline|x| 转为 \lstinline|T| 类型的最简单方法是 \lstinline|T(x)|。
+字符串的解读可通过 \lstinline|parse(Type, str)| 完成。
+多个参数自动提升为相同类型（若可行）可用 \lstinline|promote| 达成，许多操作（算术、赋值）会自动进行类型提升。
+\lstinputlisting{src/literal.jl}
 
 可通过如下方式查验值的类型：
-\begin{lstlisting}
-  typeof("abc")              # 返回 String， String是 AbstractString的子类型
-  isa("abc", AbstractString) # true
-  isa(1, Float64)            # false, 1 是整数而不是浮点数
-  isa(1.0, Float64)          # true
-  1.0 isa Number             # 另一种语法；true，Number （数）是一种抽象类型
-  supertype(Int64)           # Int64 的父类型
-  subtypes(Real)             # 抽象类型 Real 的子类型
-\end{lstlisting}
-我们也可以进行任意精度的算术运算及复数和分数的运算：
-\begin{lstlisting}
-  BigInt(10)^1000   # 大整数
-  BigFloat(10)^1000 # 大浮点数，如需改变默认精度，可参考文档
-  big(1.5)          # 对应大数类型的值，在此例是 BigFloat
-  1 + 1im           # 复数
-  123//456          # 使用 // 算符写分数
-\end{lstlisting}
+\lstinputlisting{src/typeof.jl}
 
-\begin{figure}
+\begin{figure}[tp]
 \centering
 \begin{tikzpicture}[sibling distance=10em,
   every node/.style = {shape=rectangle, rounded corners,
@@ -254,7 +229,7 @@ Julia 无法准确进行类型转化时会抛出非精确转化错误。
                 child { node {Int8 \\ Int16 \\ Int32 \\ Int64 \\ Int128} }
             }
             child[sibling distance=8em]{ node {Unsigned}
-                child { node {UInt8 \\ UInt16 \\ UInt32 \\ UInt64 \\ UInt128} }
+                child[sibling distance=100em] { node {UInt8 \\ UInt16 \\ UInt32 \\ UInt64 \\ UInt128} }
             }
         }
         child[sibling distance=14.5em]{ node {AbstractFloat}
@@ -267,6 +242,11 @@ Julia 无法准确进行类型转化时会抛出非精确转化错误。
 \end{figure}
 
 全部标准数值类型的层级结构见图~\ref{fig:numeric}。
+
+Julia 当然支持常见的数学运算和函数，我们可以把 Julia REPL 当作计算器使用。
+\lstinputlisting{src/calc.jl}
+
+Julia 遵循基本的算术运算优先顺序，以及一些省略乘号的语法糖，但依然推荐您在任何有必要的情况加括号。
 
 \section{特殊字面值与类型}
 \begin{lstlisting}
@@ -856,6 +836,7 @@ Julia 中的一个核心语言结构 \lstinline|Missing| 专门用于表示缺�
 使用 \lstinline|BenchmarkTools| 包以获得更强大的基准测试功能。
 
 \section{绘图}
+\label{sec:plot}
 Julia 有几个绘图包，例如 \lstinline|Plots| （涵盖了多个绘图后端的接口包）以及 \lstinline|PyPlot|.
 这里我们介绍 Python 用户会觉得似曾相识的 \lstinline|PyPlot|。
 \begin{lstlisting}
@@ -942,6 +923,9 @@ Julia 里有多个包支持表格数据。
 \end{lstlisting}
 
 
+\section{扩展阅读}
+\label{sec:readmore}
 
-
+请参阅 Julia 最新版文档 \url{https://docs.julialang.org/} 
+\footnote{译注：亦可参考完善中的中文文档 \url{https://docs.juliacn.com/latest/}，但请以英文原文为准。} 以了解这些内容。
 \end{document}
