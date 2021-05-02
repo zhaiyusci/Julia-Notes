@@ -326,18 +326,21 @@ Julia 遵循基本的算术运算优先顺序，以及一些省略乘号的语�
 在 Julia 中，块总是以 \lstinline|end| 结束，而有不同的开头。
 \lstinputlisting{src/control.jl}
 
-表达式可以用 \lstinline|;| 或者 \lstinline|begin end| 块结合在一起：
-\begin{lstlisting}
-  x = (a = 1; 2 * a) # 此后  x = 2; a = 1
-  y = begin
-    b = 3
-    3 * b
-  end              # 此后 y = 9; b = 3
-\end{lstlisting}
-
-
-你可以定义自己的函数（function）：
+\section{函数}
 \label{sec:function}
+
+Julia 的\textbf{函数}（function）仅指抽象的接口，
+具体的如 C 语言那样针对特定参数类型的具体执行过程则被称为\textbf{方法}（method）。
+程序执行时，Julia 会根据你的参数类型调用特定的方法，这被称为\textbf{派发}（dispatch）。
+Julia 中函数的定义是很灵活的，我们来看具体实例。
+\lstinputlisting{src/function.jl}
+从上面的例子可以看出 Julia 的函数调用的派发特性。
+利用这个特性，我们可以方便地对不同类型的参数进行类似的操作。
+如果一组类型的对象都遵循一样的运算逻辑，而其基础的运算规则都已经定义好，
+不妨多多依赖 Julia 的派发机制。
+Julia 的派发已经充分考虑了性能问题。
+\lstinputlisting{src/dispatch_perform.jl}
+
 \begin{lstlisting}
   f(x, y = 10) = x + y           # 新函数 f 的单行定义，y 默认值是 10
                                  # 返回最后一个表达式的结果
